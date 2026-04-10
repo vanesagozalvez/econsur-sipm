@@ -133,8 +133,9 @@ tryCatch({
 
 # Validación final
 if (is.null(ipim_raw)) {
-  stop("ERROR: ipim_raw es NULL")
+  cat("WARNING: ipim_raw es NULL\n")
 }
+
 ultimo_periodo <- tryCatch({
   max(ipim_raw$periodo, na.rm = TRUE)
 }, error = function(e) {
@@ -181,13 +182,14 @@ if (!data_ok) {
 
   ui <- fluidPage(
     h2("Error en carga de datos"),
-    p("Revisar logs en Render"),
-    verbatimTextOutput("error_msg")
+    p("Revisar logs en Render")
   )
 
   server <- function(input, output, session) {}
 
   shinyApp(ui, server)
+
+  return()   # 🔥 ESTO ES CLAVE
 }
 
 
