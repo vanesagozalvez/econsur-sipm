@@ -21,7 +21,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN R -e "options(repos=c(RSPM=Sys.getenv('RSPM'))); \
     install.packages(c( \
       'shiny', \
-      'bs4Dash', \
       'dplyr', \
       'tidyr', \
       'tibble', \
@@ -29,8 +28,10 @@ RUN R -e "options(repos=c(RSPM=Sys.getenv('RSPM'))); \
       'viridis', \
       'lubridate', \
       'shinycssloaders', \
-      'waiter' \
-    ), dependencies=TRUE)"
+      'waiter', \
+      'remotes' \
+    ), dependencies=TRUE); \
+    remotes::install_version('bs4Dash', version='2.3.3', repos=Sys.getenv('RSPM'), upgrade='never')"
 
 # Configuración
 COPY shiny-server.conf /etc/shiny-server/shiny-server.conf
