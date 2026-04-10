@@ -2,25 +2,21 @@ FROM rocker/shiny:4.3.3
 
 ENV RSPM="https://packagemanager.posit.co/cran/__linux__/jammy/latest"
 ENV DEBIAN_FRONTEND=noninteractive
-ENV LANG=en_US.UTF-8
-ENV LC_ALL=en_US.UTF-8
 
-# Dependencias del sistema (incluye V8 para highcharter)
+# System dependencies (includes V8 for highcharter)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libcurl4-openssl-dev \
     libssl-dev \
     libxml2-dev \
     libv8-dev \
-    locales \
-    && locale-gen en_US.UTF-8 \
-    && update-locale LANG=en_US.UTF-8 \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Instalar paquetes R
+# Install R packages
 RUN R -e "options(repos=c(RSPM=Sys.getenv('RSPM'))); \
     install.packages(c( \
       'shiny', \
+      'bs4Dash', \
       'dplyr', \
       'tidyr', \
       'tibble', \
@@ -28,15 +24,13 @@ RUN R -e "options(repos=c(RSPM=Sys.getenv('RSPM'))); \
       'viridis', \
       'lubridate', \
       'shinycssloaders', \
-      'waiter', \
-      'remotes' \
-    ), dependencies=TRUE); \
-    remotes::install_version('bs4Dash', version='2.3.3', repos=Sys.getenv('RSPM'), upgrade='never')"
+      'waiter' \
+    ), dependencies=TRUE)"
 
-# Configuración
+# Config
 COPY shiny-server.conf /etc/shiny-server/shiny-server.conf
 
-# App – copiada en su propia carpeta para que Shiny Server la detecte correctamente
+# App in its own subfolder so Shiny Server detects it correctly
 RUN mkdir -p /srv/shiny-server/sipm
 COPY app.R /srv/shiny-server/sipm/app.R
 COPY data/  /srv/shiny-server/sipm/data/
@@ -44,4 +38,3 @@ COPY data/  /srv/shiny-server/sipm/data/
 EXPOSE 3838
 
 CMD ["/usr/bin/shiny-server"]
-
