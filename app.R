@@ -107,12 +107,39 @@ load_index <- function(path, col_name) {
 
 
 cat("[STARTUP] Loading CSVs...\n")
-ipim_raw <- load_index("data/indice_ipim.csv", "indice_ipim")
-ipib_raw <- load_index("data/indice_ipib.csv", "indice_ipib")
-ipp_raw  <- load_index("data/indice_ipp.csv",  "indice_ipp")
-cat("[STARTUP] Done. Periodos:", as.character(max(ipim_raw$periodo)), "\n")
 
-ultimo_periodo <- max(ipim_raw$periodo)
+ipim_raw <- ipib_raw <- ipp_raw <- NULL
+
+tryCatch({
+
+  ipim_raw <- load_index("data/indice_ipim.csv", "indice_ipim")
+  ipib_raw <- load_index("data/indice_ipib.csv", "indice_ipib")
+  ipp_raw  <- load_index("data/indice_ipp.csv",  "indice_ipp")
+
+  cat("[STARTUP] CSVs cargados OK\n")
+
+}, error = function(e) {
+
+  cat("\n========= ERROR EN CARGA DE CSV =========\n")
+  cat(e$message, "\n")
+  cat("========================================\n")
+
+  stop(e$message)
+})
+
+# Validación final
+if (is.null(ipim_raw)) {
+  stop("ERROR: ipim_raw es NULL")
+}
+
+ultimo_periodo <- tryCatch({
+  max(ipim_raw$periodo, na.rm = TRUE)
+}, error = function(e) {
+  stop("ERROR calculando ultimo_periodo")
+})
+
+cat("[STARTUP] Periodo detectado:", as.character(ultimo_periodo), "\n")
+
 ultimo_label   <- paste0(traducir_mes(format(ultimo_periodo, "%B")),
                          " de ", format(ultimo_periodo, "%Y"))
 
