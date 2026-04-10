@@ -1,0 +1,7 @@
+services:
+  - type: web
+    name: econsur-sipm
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    healthCheckPath: /
