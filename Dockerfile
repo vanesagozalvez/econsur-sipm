@@ -29,9 +29,10 @@ RUN R -e "options(repos=c(RSPM=Sys.getenv('RSPM'))); \
 # Configuración
 COPY shiny-server.conf /etc/shiny-server/shiny-server.conf
 
-# App
-COPY app.R /srv/shiny-server/app.R
-COPY data/ /srv/shiny-server/data/
+# App – copiada en su propia carpeta para que Shiny Server la detecte correctamente
+RUN mkdir -p /srv/shiny-server/sipm
+COPY app.R /srv/shiny-server/sipm/app.R
+COPY data/  /srv/shiny-server/sipm/data/
 
 EXPOSE 3838
 

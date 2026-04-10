@@ -189,15 +189,15 @@ if (!data_ok) {
 
   shinyApp(ui, server)
 
-  return()   # 🔥 ESTO ES CLAVE
+  # NOTA: return() en contexto global causa error fatal en R —
+  # shinyApp() ya detiene la ejecución al lanzar la app de error.
 }
 
-
+if (data_ok) {
 
 # ── UI ────────────────────────────────────────────────────────────────────────
 ui <- dashboardPage(
-  options   = FALSE,
-  preloader = list(html = tagList(spin_6(), " Cargando..."), color = "#1a237e"),
+  preloader = list(html = tagList(waiter::spin_6(), " Cargando..."), color = "#1a237e"),
   header    = dashboardHeader(
     skin  = "dark", fixed = TRUE,
     title = dashboardBrand(
@@ -729,4 +729,6 @@ server <- function(input, output, session) {
 }
 
 shinyApp(ui = ui, server = server)
-        
+
+} # end if (data_ok)
+
