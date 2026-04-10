@@ -1,12 +1,31 @@
-library(shiny)
-library(bs4Dash)
-library(dplyr)
-library(tidyr)
-library(highcharter)
-library(viridis)
-library(lubridate)
-library(shinycssloaders)
-library(waiter)
+safe_library <- function(pkg) {
+  cat(paste0("[LOAD PACKAGE] ", pkg, "...\n"))
+  tryCatch({
+    library(pkg, character.only = TRUE)
+    cat(paste0("[OK] ", pkg, "\n"))
+  }, error = function(e) {
+    cat("\n================ ERROR DE PAQUETE ================\n")
+    cat(paste("Fallo cargando:", pkg, "\n"))
+    cat(e$message, "\n")
+    cat("=================================================\n")
+    stop(e$message)
+  })
+}
+
+cat("=== INICIO APP ===\n")
+
+safe_library("shiny")
+safe_library("bs4Dash")
+safe_library("dplyr")
+safe_library("tidyr")
+safe_library("highcharter")
+safe_library("viridis")
+safe_library("lubridate")
+safe_library("shinycssloaders")
+safe_library("waiter")
+
+
+
 
 cat("====================================\n")
 cat("[STARTUP] Iniciando aplicación Shiny\n")
