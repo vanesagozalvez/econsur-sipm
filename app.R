@@ -8,7 +8,131 @@ library(lubridate)
 library(shinycssloaders)
 library(waiter)
 
-cat("[STARTUP] Packages loaded\n")
+cat("====================================\n")
+cat("[STARTUP] Iniciando aplicación Shiny\n")
+cat("====================================\n")
+
+# ── DEBUG: ver archivos disponibles ──────────────────────────────────────────
+cat("[DEBUG] Working directory:\n")
+print(getwd())
+
+cat("[DEBUG] Archivos en raíz:\n")
+print(list.files())
+
+cat("[DEBUG] Archivos en /data:\n")
+if (dir.exists("data")) {
+  print(list.files("data"))
+} else {
+  cat("ERROR: carpeta /data NO existe\n")
+}
+
+# ── Helpers ──────────────────────────────────────────────────────────────────
+traducir_mes <- function(mes_ingles) {
+  meses    <- c("january","february","march","april","may","june",
+                "july","august","september","october","november","december")
+  meses_es <- c("Enero","Febrero","Marzo","Abril","Mayo","Junio",
+                "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre")
+  idx <- match(tolower(mes_ingles), meses)
+  if (!is.na(idx)) meses_es[idx] else mes_ingles
+}
+
+parse_num <- function(x) as.numeric(gsub(",", ".", as.character(x)))
+
+interanual_rolling_from_vm <- function(vm_vec) {
+  n      <- length(vm_vec)
+  result <- rep(NA_real_, n)
+  fac    <- vm_vec / 100 + 1
+  for (i in 12:n) {
+    w <- fac[(i - 11):i]
+    if (!any(is.na(w))) result[i] <- round((prod(w) - 1) * 100, 2)
+  }
+  result
+}
+
+# ── Carga robusta de datos ───────────────────────────────────────────────────
+load_index <- function(path, col_name) {
+
+  cat(paste0("\n[LOAD] Intentando cargar: ", path, "\n"))
+
+  if (!file.exists(path)) {
+    stop(paste("ERROR: archivo NO encontrado ->", path))
+  }
+
+  raw <- tryCatch({
+    read.csv2(path, encoding = "latin1",
+              stringsAsFactors = FALSE, na.strings = c("NA", ""))
+  }, error = function(e) {
+    stop(paste("ERROR leyendo CSV:", path, "->", e$message))
+  })
+
+  cat("[LOAD] Columnas detectadas:\n")
+  print(colnames(raw))
+
+  if (!col_name %in% colnames(raw)) {
+    stop(paste("ERROR: columna", col_name, "NO existe en", path))
+  }
+
+  if (!"periodo" %in% colnames(raw)) {
+    stop(paste("ERROR: columna 'periodo' NO existe en", path))
+  }
+
+  raw[[col_name]] <- parse_num(raw[[col_name]])
+
+  raw$periodo <- tryCatch({
+    as.Date(raw$periodo)
+  }, error = function(e) {
+    stop(paste("ERROR convirtiendo fechas en", path))
+  })
+
+  if (all(is.na(raw$periodo))) {
+    stop(paste("ERROR: todas las fechas son NA en", path))
+  }
+
+  cat("[LOAD] OK -> filas:", nrow(raw), "\n")
+
+  raw %>%
+    filter(!is.na(periodo), !is.na(.data[[col_name]])) %>%
+    arrange(nivel_general_aperturas, periodo) %>%
+    group_by(nivel_general_aperturas) %>%
+    mutate(
+      indice = .data[[col_name]],
+      v_m    = round((indice / lag(indice) - 1) * 100, 2),
+      v_ia   = interanual_rolling_from_vm(v_m)
+    ) %>%
+    ungroup()
+}
+
+# ── TRY CATCH GLOBAL (CLAVE) ─────────────────────────────────────────────────
+ipim_raw <- ipib_raw <- ipp_raw <- NULL
+
+tryCatch({
+
+  cat("[STARTUP] Cargando CSVs...\n")
+
+  ipim_raw <- load_index("data/indice_ipim.csv", "indice_ipim")
+  ipib_raw <- load_index("data/indice_ipib.csv", "indice_ipib")
+  ipp_raw  <- load_index("data/indice_ipp.csv",  "indice_ipp")
+
+  cat("[STARTUP] CSVs cargados OK\n")
+
+}, error = function(e) {
+
+  cat("\n================ ERROR CRITICO ================\n")
+  cat(e$message, "\n")
+  cat("==============================================\n")
+
+  # Forzar que la app NO muera silenciosamente
+  stop(e$message)
+})
+
+ultimo_periodo <- max(ipim_raw$periodo)
+ultimo_label   <- paste0(traducir_mes(format(ultimo_periodo, "%B")),
+                         " de ", format(ultimo_periodo, "%Y"))
+
+cat("[STARTUP] Inicialización completa\n")
+
+
+
 
 # ── Helpers ──────────────────────────────────────────────────────────────────
 traducir_mes <- function(mes_ingles) {
