@@ -25,7 +25,7 @@ RUN R -e "install.packages(c( \
     'lubridate', \
     'shinycssloaders', \
     'waiter' \
-  ), repos='https://cloud.r-project.org/', dependencies=TRUE)"
+  ), repos='https://cloud.r-project.org/', dependencies=FALSE)"
 
 # Copiar configuracion de Shiny Server
 COPY shiny-server.conf /etc/shiny-server/shiny-server.conf
