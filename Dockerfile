@@ -1,40 +1,47 @@
 FROM rocker/shiny:4.3.3
 
-# Dependencias del sistema
-RUN apt-get update && apt-get install -y \
+# ── Repositorio RSPM: binarios pre-compilados para Ubuntu 22.04 ──────────────
+# Esto evita compilar desde fuente y reduce drásticamente RAM y tiempo de build
+ENV RSPM="https://packagemanager.posit.co/cran/__linux__/jammy/latest"
+
+# ── Dependencias de sistema mínimas (solo las estrictamente necesarias) ───────
+RUN apt-get update && apt-get install -y --no-install-recommends \
     libcurl4-openssl-dev \
     libssl-dev \
     libxml2-dev \
-    libfontconfig1-dev \
-    libharfbuzz-dev \
-    libfribidi-dev \
-    libfreetype6-dev \
-    libpng-dev \
-    libtiff5-dev \
-    libjpeg-dev \
+    && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Paquetes R
-RUN R -e "install.packages(c( \
-    'shiny', \
-    'bs4Dash', \
-    'dplyr', \
-    'tidyr', \
-    'highcharter', \
-    'viridis', \
-    'lubridate', \
-    'shinycssloaders', \
-    'waiter' \
-  ), repos='https://cloud.r-project.org/', dependencies=FALSE)"
+# ── Paquetes R desde RSPM en binario ─────────────────────────────────────────
+# SIN dependencies=TRUE -> solo dependencias directas e indispensables
+# Instalados en bloques separados para aprovechar cache de capas Docker
 
-# Copiar configuracion de Shiny Server
+RUN R -e "options(repos=c(RSPM=Sys.getenv('RSPM'))); \
+    install.packages(c('dplyr','tidyr','lubridate'), \
+    type='binary', dependencies=FALSE)"
+
+RUN R -e "options(repos=c(RSPM=Sys.getenv('RSPM'))); \
+    install.packages(c('shiny','shinycssloaders'), \
+    type='binary', dependencies=FALSE)"
+
+RUN R -e "options(repos=c(RSPM=Sys.getenv('RSPM'))); \
+    install.packages(c('bs4Dash','waiter'), \
+    type='binary', dependencies=FALSE)"
+
+RUN R -e "options(repos=c(RSPM=Sys.getenv('RSPM'))); \
+    install.packages('highcharter', \
+    type='binary', dependencies=FALSE)"
+
+RUN R -e "options(repos=c(RSPM=Sys.getenv('RSPM'))); \
+    install.packages('viridis', \
+    type='binary', dependencies=FALSE)"
+
+# ── Configuracion Shiny Server ────────────────────────────────────────────────
 COPY shiny-server.conf /etc/shiny-server/shiny-server.conf
 
-# Copiar la aplicacion
-COPY app.R       /srv/shiny-server/app.R
-COPY data/       /srv/shiny-server/data/
+# ── Aplicacion ────────────────────────────────────────────────────────────────
+COPY app.R   /srv/shiny-server/app.R
+COPY data/   /srv/shiny-server/data/
 
-# Puerto dinamico de Render
 EXPOSE 3838
-
 CMD ["/usr/bin/shiny-server"]
