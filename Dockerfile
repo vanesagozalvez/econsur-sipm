@@ -2,6 +2,8 @@ FROM rocker/shiny:4.3.3
 
 ENV RSPM="https://packagemanager.posit.co/cran/__linux__/jammy/latest"
 ENV DEBIAN_FRONTEND=noninteractive
+ENV LANG=en_US.UTF-8
+ENV LC_ALL=en_US.UTF-8
 
 # Dependencias del sistema (incluye V8 para highcharter)
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -9,6 +11,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libssl-dev \
     libxml2-dev \
     libv8-dev \
+    locales \
+    && locale-gen en_US.UTF-8 \
+    && update-locale LANG=en_US.UTF-8 \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 

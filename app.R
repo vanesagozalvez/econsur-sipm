@@ -66,7 +66,7 @@ load_index <- function(path, col_name) {
   cat("[DEBUG] Columnas disponibles:\n")
   print(colnames(raw))
 
-  # Validaciones críticas
+  # Validaciones criticas
   if (!col_name %in% colnames(raw)) {
     stop(paste("ERROR: no existe columna", col_name))
   }
@@ -132,7 +132,7 @@ tryCatch({
 })
 
 
-# Validación final
+# Validacion final
 if (is.null(ipim_raw)) {
   cat("WARNING: ipim_raw es NULL\n")
 }
@@ -161,14 +161,14 @@ TOP_IPP  <- c("ng_nivel_general", "1_primarios",
 LABEL_MAP <- c(
   "ng_nivel_general"                               = "Nivel General",
   "1_primarios"                                    = "Primarios",
-  "2_industria_manufacturera_ y_energia_electrica" = "Ind. Manuf. y Energía",
+  "2_industria_manufacturera_ y_energia_electrica" = "Ind. Manuf. y Energia",
   "i_productos_importados"                         = "Importados"
 )
 
 COLORES_COMP <- c(
   "Nivel General"         = "#37474f",
   "Primarios"             = "#1565c0",
-  "Ind. Manuf. y Energía" = "#c62828",
+  "Ind. Manuf. y Energia" = "#c62828",
   "Importados"            = "#2e7d32"
 )
 
@@ -184,8 +184,8 @@ if (!data_ok) {
   ui <- fluidPage(
     tags$head(tags$style(HTML("body{background:#f5f5f5;font-family:sans-serif;}"))),
     div(style = "max-width:600px;margin:80px auto;padding:40px;background:white;border-radius:8px;border-left:5px solid #c62828;",
-      h2("⚠ Error al cargar los datos", style = "color:#c62828;"),
-      p("La aplicación no pudo inicializar. Revisar los logs en Render Dashboard."),
+      h2("Error al cargar los datos", style = "color:#c62828;"),
+      p("La aplicacion no pudo inicializar. Revisar los logs en Render Dashboard."),
       p(em("Verificar que la carpeta data/ contiene los 3 archivos CSV."))
     )
   )
@@ -198,13 +198,13 @@ ui <- dashboardPage(
   header    = dashboardHeader(
     skin  = "dark", fixed = TRUE,
     title = dashboardBrand(
-      title = "EconSur · SIPM Argentina",
+      title = "EconSur - SIPM Argentina",
       image = "https://upload.wikimedia.org/wikipedia/commons/6/64/Logo_Indec.png"
     )
   ),
   sidebar = dashboardSidebar(skin = "light", width = 280,
     sidebarMenu(
-      menuItem("Principal – SIPM",  tabName = "principal", icon = icon("home")),
+      menuItem("Principal - SIPM",  tabName = "principal", icon = icon("home")),
       menuItem("IPIM",              tabName = "ipim",      icon = icon("industry")),
       menuItem("IPIB",              tabName = "ipib",      icon = icon("boxes-stacked")),
       menuItem("IPP",               tabName = "ipp",       icon = icon("tractor")),
@@ -219,9 +219,9 @@ ui <- dashboardPage(
     "))),
     tabItems(
 
-      # ── Tab 1 · Principal ────────────────────────────────────────────────
+      # ── Tab 1 - Principal ────────────────────────────────────────────────
       tabItem(tabName = "principal",
-        h3("Sistema de Índices de Precios Mayoristas (SIPM)"),
+        h3("Sistema de Indices de Precios Mayoristas (SIPM)"),
         p(paste0("Serie actualizada a ", ultimo_label,
                  ". Fuente: INDEC. Base: dic-2015 = 100.")),
         fluidRow(
@@ -230,18 +230,18 @@ ui <- dashboardPage(
           bs4ValueBoxOutput("vb_ipp",  width = 4)
         ),
         fluidRow(
-          bs4Card(width = 12, title = "Evolución Comparada de los Índices",
+          bs4Card(width = 12, title = "Evolucion Comparada de los Indices",
                   status = "primary",
             fluidRow(
               column(6,
-                radioButtons("rng_principal", "Período:",
-                  choices  = c("Histórico", "Últimos 36 meses", "Últimos 12 meses"),
-                  selected = "Histórico", inline = TRUE)
+                radioButtons("rng_principal", "Periodo:",
+                  choices  = c("Historico", "Ultimos 36 meses", "Ultimos 12 meses"),
+                  selected = "Historico", inline = TRUE)
               ),
               column(6,
-                radioButtons("metrica_principal", "Métrica:",
-                  choices  = c("Nivel (base 100)", "Variación Mensual %",
-                               "Variación Interanual %"),
+                radioButtons("metrica_principal", "Metrica:",
+                  choices  = c("Nivel (base 100)", "Variacion Mensual %",
+                               "Variacion Interanual %"),
                   selected = "Nivel (base 100)", inline = TRUE)
               )
             ),
@@ -251,14 +251,14 @@ ui <- dashboardPage(
         fluidRow(
           column(6,
             bs4Card(width = 12,
-              title  = paste0("Variación Mensual – ", ultimo_label),
+              title  = paste0("Variacion Mensual - ", ultimo_label),
               status = "info",
               withSpinner(highchartOutput("plot_principal_barras_m",  height = "260px"), type = 4)
             )
           ),
           column(6,
             bs4Card(width = 12,
-              title  = paste0("Variación Interanual – ", ultimo_label),
+              title  = paste0("Variacion Interanual - ", ultimo_label),
               status = "warning",
               withSpinner(highchartOutput("plot_principal_barras_ia", height = "260px"), type = 4)
             )
@@ -266,21 +266,21 @@ ui <- dashboardPage(
         )
       ),
 
-      # ── Tab 2 · IPIM ────────────────────────────────────────────────────
+      # ── Tab 2 - IPIM ────────────────────────────────────────────────────
       tabItem(tabName = "ipim",
-        h3("IPIM – Índice de Precios Internos al por Mayor"),
+        h3("IPIM - Indice de Precios Internos al por Mayor"),
         p(paste0("Componentes vs Nivel General. Datos a ", ultimo_label, ".")),
-        bs4Card(width = 12, title = "Evolución de Componentes", status = "primary",
+        bs4Card(width = 12, title = "Evolucion de Componentes", status = "primary",
           fluidRow(
             column(6,
-              radioButtons("rng_ipim", "Período:",
-                choices  = c("Histórico", "Últimos 36 meses", "Últimos 12 meses"),
-                selected = "Histórico", inline = TRUE)
+              radioButtons("rng_ipim", "Periodo:",
+                choices  = c("Historico", "Ultimos 36 meses", "Ultimos 12 meses"),
+                selected = "Historico", inline = TRUE)
             ),
             column(6,
-              radioButtons("metrica_ipim", "Métrica:",
-                choices  = c("Nivel (base 100)", "Variación Mensual %",
-                             "Variación Interanual %"),
+              radioButtons("metrica_ipim", "Metrica:",
+                choices  = c("Nivel (base 100)", "Variacion Mensual %",
+                             "Variacion Interanual %"),
                 selected = "Nivel (base 100)", inline = TRUE)
             )
           ),
@@ -289,14 +289,14 @@ ui <- dashboardPage(
         fluidRow(
           column(6,
             bs4Card(width = 12,
-              title  = paste0("Variación Mensual por Componente – ", ultimo_label),
+              title  = paste0("Variacion Mensual por Componente - ", ultimo_label),
               status = "info",
               withSpinner(highchartOutput("plot_ipim_barras_m",  height = "280px"), type = 4)
             )
           ),
           column(6,
             bs4Card(width = 12,
-              title  = paste0("Variación Interanual por Componente – ", ultimo_label),
+              title  = paste0("Variacion Interanual por Componente - ", ultimo_label),
               status = "warning",
               withSpinner(highchartOutput("plot_ipim_barras_ia", height = "280px"), type = 4)
             )
@@ -304,21 +304,21 @@ ui <- dashboardPage(
         )
       ),
 
-      # ── Tab 3 · IPIB ────────────────────────────────────────────────────
+      # ── Tab 3 - IPIB ────────────────────────────────────────────────────
       tabItem(tabName = "ipib",
-        h3("IPIB – Índice de Precios Internos Básicos al por Mayor"),
+        h3("IPIB - Indice de Precios Internos Basicos al por Mayor"),
         p(paste0("Componentes vs Nivel General. Datos a ", ultimo_label, ".")),
-        bs4Card(width = 12, title = "Evolución de Componentes", status = "primary",
+        bs4Card(width = 12, title = "Evolucion de Componentes", status = "primary",
           fluidRow(
             column(6,
-              radioButtons("rng_ipib", "Período:",
-                choices  = c("Histórico", "Últimos 36 meses", "Últimos 12 meses"),
-                selected = "Histórico", inline = TRUE)
+              radioButtons("rng_ipib", "Periodo:",
+                choices  = c("Historico", "Ultimos 36 meses", "Ultimos 12 meses"),
+                selected = "Historico", inline = TRUE)
             ),
             column(6,
-              radioButtons("metrica_ipib", "Métrica:",
-                choices  = c("Nivel (base 100)", "Variación Mensual %",
-                             "Variación Interanual %"),
+              radioButtons("metrica_ipib", "Metrica:",
+                choices  = c("Nivel (base 100)", "Variacion Mensual %",
+                             "Variacion Interanual %"),
                 selected = "Nivel (base 100)", inline = TRUE)
             )
           ),
@@ -327,14 +327,14 @@ ui <- dashboardPage(
         fluidRow(
           column(6,
             bs4Card(width = 12,
-              title  = paste0("Variación Mensual por Componente – ", ultimo_label),
+              title  = paste0("Variacion Mensual por Componente - ", ultimo_label),
               status = "info",
               withSpinner(highchartOutput("plot_ipib_barras_m",  height = "280px"), type = 4)
             )
           ),
           column(6,
             bs4Card(width = 12,
-              title  = paste0("Variación Interanual por Componente – ", ultimo_label),
+              title  = paste0("Variacion Interanual por Componente - ", ultimo_label),
               status = "warning",
               withSpinner(highchartOutput("plot_ipib_barras_ia", height = "280px"), type = 4)
             )
@@ -342,21 +342,21 @@ ui <- dashboardPage(
         )
       ),
 
-      # ── Tab 4 · IPP ─────────────────────────────────────────────────────
+      # ── Tab 4 - IPP ─────────────────────────────────────────────────────
       tabItem(tabName = "ipp",
-        h3("IPP – Índice de Precios Básicos del Productor"),
+        h3("IPP - Indice de Precios Basicos del Productor"),
         p(paste0("Componentes vs Nivel General. Datos a ", ultimo_label, ".")),
-        bs4Card(width = 12, title = "Evolución de Componentes", status = "primary",
+        bs4Card(width = 12, title = "Evolucion de Componentes", status = "primary",
           fluidRow(
             column(6,
-              radioButtons("rng_ipp", "Período:",
-                choices  = c("Histórico", "Últimos 36 meses", "Últimos 12 meses"),
-                selected = "Histórico", inline = TRUE)
+              radioButtons("rng_ipp", "Periodo:",
+                choices  = c("Historico", "Ultimos 36 meses", "Ultimos 12 meses"),
+                selected = "Historico", inline = TRUE)
             ),
             column(6,
-              radioButtons("metrica_ipp", "Métrica:",
-                choices  = c("Nivel (base 100)", "Variación Mensual %",
-                             "Variación Interanual %"),
+              radioButtons("metrica_ipp", "Metrica:",
+                choices  = c("Nivel (base 100)", "Variacion Mensual %",
+                             "Variacion Interanual %"),
                 selected = "Nivel (base 100)", inline = TRUE)
             )
           ),
@@ -365,14 +365,14 @@ ui <- dashboardPage(
         fluidRow(
           column(6,
             bs4Card(width = 12,
-              title  = paste0("Variación Mensual por Componente – ", ultimo_label),
+              title  = paste0("Variacion Mensual por Componente - ", ultimo_label),
               status = "info",
               withSpinner(highchartOutput("plot_ipp_barras_m",  height = "280px"), type = 4)
             )
           ),
           column(6,
             bs4Card(width = 12,
-              title  = paste0("Variación Interanual por Componente – ", ultimo_label),
+              title  = paste0("Variacion Interanual por Componente - ", ultimo_label),
               status = "warning",
               withSpinner(highchartOutput("plot_ipp_barras_ia", height = "280px"), type = 4)
             )
@@ -382,31 +382,31 @@ ui <- dashboardPage(
 
       # ── Acerca de ────────────────────────────────────────────────────────
       tabItem(tabName = "about",
-        h2("Acerca de EconSur – SIPM"),
+        h2("Acerca de EconSur - SIPM"),
         bs4Card(width = 8,
-          title       = strong("Sistema de Índices de Precios Mayoristas"),
+          title       = strong("Sistema de Indices de Precios Mayoristas"),
           solidHeader = TRUE, status = "primary",
-          p("Dashboard del SIPM publicado por INDEC. Base año 1993,",
-            "período de referencia: diciembre 2015 = 100."),
-          p("El último mes publicado es dato provisorio."),
+          p("Dashboard del SIPM publicado por INDEC. Base anio 1993,",
+            "periodo de referencia: diciembre 2015 = 100."),
+          p("El ultimo mes publicado es dato provisorio."),
           tags$ul(
-            tags$li(strong("IPIM:"), " Índice de Precios Internos al por Mayor"),
-            tags$li(strong("IPIB:"), " Índice de Precios Internos Básicos al por Mayor"),
-            tags$li(strong("IPP:"),  " Índice de Precios Básicos del Productor")
+            tags$li(strong("IPIM:"), " Indice de Precios Internos al por Mayor"),
+            tags$li(strong("IPIB:"), " Indice de Precios Internos Basicos al por Mayor"),
+            tags$li(strong("IPP:"),  " Indice de Precios Basicos del Productor")
           ),
           tags$hr(),
           p(strong("Componentes:"),
             tags$ul(
-              tags$li(strong("Nivel General:"), " agregado total del índice"),
+              tags$li(strong("Nivel General:"), " agregado total del indice"),
               tags$li(strong("Primarios:"), " productos agropecuarios y mineros sin transformar"),
-              tags$li(strong("Ind. Manuf. y Energía:"), " manufacturas y energía eléctrica"),
+              tags$li(strong("Ind. Manuf. y Energia:"), " manufacturas y energia electrica"),
               tags$li(strong("Importados:"), " bienes importados (IPIM e IPIB)")
             )
           ),
           tags$hr(),
           p("Fuente: ",
             tags$a(href = "https://www.indec.gob.ar/", "INDEC"),
-            " – Dirección Nacional de Estadísticas de Precios."),
+            " - Direccion Nacional de Estadisticas de Precios."),
           p("Deploy: ", tags$a(href = "https://render.com/", "Render (Docker)"))
         )
       )
@@ -432,23 +432,23 @@ server <- function(input, output, session) {
   metrica_col <- function(metrica) {
     switch(metrica,
       "Nivel (base 100)"       = "indice",
-      "Variación Mensual %"    = "v_m",
-      "Variación Interanual %" = "v_ia"
+      "Variacion Mensual %"    = "v_m",
+      "Variacion Interanual %" = "v_ia"
     )
   }
 
   metrica_ytitle <- function(metrica) {
     switch(metrica,
-      "Nivel (base 100)"       = "Índice (dic-2015=100)",
-      "Variación Mensual %"    = "% Mensual",
-      "Variación Interanual %" = "% Interanual"
+      "Nivel (base 100)"       = "Indice (dic-2015=100)",
+      "Variacion Mensual %"    = "% Mensual",
+      "Variacion Interanual %" = "% Interanual"
     )
   }
 
   filtrar_rng <- function(df, rng) {
     max_p <- max(df$periodo, na.rm = TRUE)
-    if (rng == "Últimos 36 meses") df <- df %>% filter(periodo >= max_p %m-% months(36))
-    if (rng == "Últimos 12 meses") df <- df %>% filter(periodo >= max_p %m-% months(12))
+    if (rng == "Ultimos 36 meses") df <- df %>% filter(periodo >= max_p %m-% months(36))
+    if (rng == "Ultimos 12 meses") df <- df %>% filter(periodo >= max_p %m-% months(12))
     df
   }
 
@@ -463,7 +463,7 @@ server <- function(input, output, session) {
              val   = .data[[col_val]]) %>%
       filtrar_rng(rng)
 
-    orden  <- c("Nivel General", "Primarios", "Ind. Manuf. y Energía", "Importados")
+    orden  <- c("Nivel General", "Primarios", "Ind. Manuf. y Energia", "Importados")
     labels <- intersect(orden, unique(df_top$label))
 
     hc <- highchart() %>%
@@ -477,7 +477,7 @@ server <- function(input, output, session) {
                labels = list(style = list(color = "black"))) %>%
       hc_legend(enabled = TRUE,
                 itemStyle = list(fontWeight = "bold", fontSize = "12px")) %>%
-      hc_title(text  = paste0(titulo, " – ", metrica),
+      hc_title(text  = paste0(titulo, " - ", metrica),
                style = list(fontSize = "15px", fontWeight = "bold")) %>%
       hc_subtitle(text  = ultimo_label,
                   style = list(fontSize = "11px", color = "#555")) %>%
@@ -504,7 +504,7 @@ server <- function(input, output, session) {
     hc
   }
 
-  # Gráfico de barras horizontales último mes
+  # Gráfico de barras horizontales ultimo mes
   build_barras <- function(df, codes, varname, ytitle, titulo) {
     bd <- df %>%
       filter(nivel_general_aperturas %in% codes, !is.na(.data[[varname]])) %>%
@@ -549,7 +549,7 @@ server <- function(input, output, session) {
     via <- round(last_val(ipim_raw, "ng_nivel_general", "v_ia"), 1)
     bs4ValueBox(
       value    = paste0(vm, " %"),
-      subtitle = HTML(paste0("IPIM – Var. Mensual<br/><small>Interanual: ", via, " %</small>")),
+      subtitle = HTML(paste0("IPIM - Var. Mensual<br/><small>Interanual: ", via, " %</small>")),
       icon     = icon("arrow-trend-up"), color = "primary",
       footer   = div(ultimo_label)
     )
@@ -560,7 +560,7 @@ server <- function(input, output, session) {
     via <- round(last_val(ipib_raw, "ng_nivel_general", "v_ia"), 1)
     bs4ValueBox(
       value    = paste0(vm, " %"),
-      subtitle = HTML(paste0("IPIB – Var. Mensual<br/><small>Interanual: ", via, " %</small>")),
+      subtitle = HTML(paste0("IPIB - Var. Mensual<br/><small>Interanual: ", via, " %</small>")),
       icon     = icon("arrow-trend-up"), color = "danger",
       footer   = div(ultimo_label)
     )
@@ -571,13 +571,13 @@ server <- function(input, output, session) {
     via <- round(last_val(ipp_raw, "ng_nivel_general", "v_ia"), 1)
     bs4ValueBox(
       value    = paste0(vm, " %"),
-      subtitle = HTML(paste0("IPP – Var. Mensual<br/><small>Interanual: ", via, " %</small>")),
+      subtitle = HTML(paste0("IPP - Var. Mensual<br/><small>Interanual: ", via, " %</small>")),
       icon     = icon("arrow-trend-up"), color = "success",
       footer   = div(ultimo_label)
     )
   })
 
-  # ── Principal – líneas ────────────────────────────────────────────────────
+  # ── Principal - líneas ────────────────────────────────────────────────────
   output$plot_principal_lineas <- renderHighchart({
     metrica <- input$metrica_principal
     rng     <- input$rng_principal
@@ -610,7 +610,7 @@ server <- function(input, output, session) {
                labels = list(style = list(color = "black"))) %>%
       hc_legend(enabled = TRUE,
                 itemStyle = list(fontWeight = "bold", fontSize = "13px")) %>%
-      hc_title(text  = paste0("IPIM / IPIB / IPP – ", metrica),
+      hc_title(text  = paste0("IPIM / IPIB / IPP - ", metrica),
                style = list(fontSize = "15px", fontWeight = "bold")) %>%
       hc_subtitle(text  = ultimo_label,
                   style = list(fontSize = "11px", color = "#555")) %>%
@@ -650,7 +650,7 @@ server <- function(input, output, session) {
            dataLabels = list(enabled = TRUE, format = "{point.y:.1f} %",
              style = list(fontSize = "13px", fontWeight = "bold",
                           textOutline = "none"))) %>%
-      hc_title(text = "Variación Mensual",
+      hc_title(text = "Variacion Mensual",
                style = list(fontSize = "13px", fontWeight = "bold")) %>%
       hc_subtitle(text = ultimo_label,
                   style = list(fontSize = "11px", color = "#555")) %>%
@@ -678,7 +678,7 @@ server <- function(input, output, session) {
            dataLabels = list(enabled = TRUE, format = "{point.y:.1f} %",
              style = list(fontSize = "13px", fontWeight = "bold",
                           textOutline = "none"))) %>%
-      hc_title(text = "Variación Interanual",
+      hc_title(text = "Variacion Interanual",
                style = list(fontSize = "13px", fontWeight = "bold")) %>%
       hc_subtitle(text = ultimo_label,
                   style = list(fontSize = "11px", color = "#555")) %>%
@@ -696,10 +696,10 @@ server <- function(input, output, session) {
     build_lineas(ipim_raw, TOP_IPIM, input$metrica_ipim, input$rng_ipim, "IPIM")
   })
   output$plot_ipim_barras_m  <- renderHighchart({
-    build_barras(ipim_raw, TOP_IPIM, "v_m",  "% Mensual",    "Variación Mensual")
+    build_barras(ipim_raw, TOP_IPIM, "v_m",  "% Mensual",    "Variacion Mensual")
   })
   output$plot_ipim_barras_ia <- renderHighchart({
-    build_barras(ipim_raw, TOP_IPIM, "v_ia", "% Interanual", "Variación Interanual")
+    build_barras(ipim_raw, TOP_IPIM, "v_ia", "% Interanual", "Variacion Interanual")
   })
 
   # ── IPIB ──────────────────────────────────────────────────────────────────
@@ -707,10 +707,10 @@ server <- function(input, output, session) {
     build_lineas(ipib_raw, TOP_IPIB, input$metrica_ipib, input$rng_ipib, "IPIB")
   })
   output$plot_ipib_barras_m  <- renderHighchart({
-    build_barras(ipib_raw, TOP_IPIB, "v_m",  "% Mensual",    "Variación Mensual")
+    build_barras(ipib_raw, TOP_IPIB, "v_m",  "% Mensual",    "Variacion Mensual")
   })
   output$plot_ipib_barras_ia <- renderHighchart({
-    build_barras(ipib_raw, TOP_IPIB, "v_ia", "% Interanual", "Variación Interanual")
+    build_barras(ipib_raw, TOP_IPIB, "v_ia", "% Interanual", "Variacion Interanual")
   })
 
   # ── IPP ───────────────────────────────────────────────────────────────────
@@ -718,10 +718,10 @@ server <- function(input, output, session) {
     build_lineas(ipp_raw, TOP_IPP, input$metrica_ipp, input$rng_ipp, "IPP")
   })
   output$plot_ipp_barras_m  <- renderHighchart({
-    build_barras(ipp_raw, TOP_IPP, "v_m",  "% Mensual",    "Variación Mensual")
+    build_barras(ipp_raw, TOP_IPP, "v_m",  "% Mensual",    "Variacion Mensual")
   })
   output$plot_ipp_barras_ia <- renderHighchart({
-    build_barras(ipp_raw, TOP_IPP, "v_ia", "% Interanual", "Variación Interanual")
+    build_barras(ipp_raw, TOP_IPP, "v_ia", "% Interanual", "Variacion Interanual")
   })
 }
 
