@@ -12,9 +12,9 @@ safe_library <- function(pkg) {
     warning(e$message)
   })
 }
-
+ 
 cat("=========== INICIO APP ===========\n")
-
+ 
 safe_library("shiny")
 safe_library("bs4Dash")
 safe_library("dplyr")
@@ -25,9 +25,9 @@ safe_library("viridis")
 safe_library("lubridate")
 safe_library("shinycssloaders")
 safe_library("waiter")
-
+ 
 cat("=========== PAQUETES OK ===========\n")
-
+ 
 # ── Helpers ──────────────────────────────────────────────────────────────────
 traducir_mes <- function(mes_ingles) {
   meses    <- c("january","february","march","april","may","june",
@@ -37,9 +37,9 @@ traducir_mes <- function(mes_ingles) {
   idx <- match(tolower(mes_ingles), meses)
   if (!is.na(idx)) meses_es[idx] else mes_ingles
 }
-
+ 
 parse_num <- function(x) as.numeric(gsub(",", ".", as.character(x)))
-
+ 
 interanual_rolling_from_vm <- function(vm_vec) {
   n      <- length(vm_vec)
   result <- rep(NA_real_, n)
@@ -50,51 +50,51 @@ interanual_rolling_from_vm <- function(vm_vec) {
   }
   result
 }
-
+ 
 load_index <- function(path, col_name) {
-
+ 
   cat("\n==============================\n")
   cat("[LOAD] Archivo:", path, "\n")
-
+ 
   if (!file.exists(path)) {
     stop(paste("ERROR: archivo no existe ->", path))
   }
-
+ 
   raw <- read.csv2(path, encoding = "latin1",
                    stringsAsFactors = FALSE, na.strings = c("NA", ""))
-
+ 
   cat("[DEBUG] Columnas disponibles:\n")
   print(colnames(raw))
-
+ 
   # Validaciones criticas
   if (!col_name %in% colnames(raw)) {
     stop(paste("ERROR: no existe columna", col_name))
   }
-
+ 
   if (!"periodo" %in% colnames(raw)) {
     stop("ERROR: no existe columna 'periodo'")
   }
-
+ 
 if (!"nivel_general_aperturas" %in% colnames(raw)) {
   cat("WARNING: no existe nivel_general_aperturas -> se crea por defecto\n")
   raw$nivel_general_aperturas <- "ng_nivel_general"
 }
-
+ 
   # Parseo seguro
   raw[[col_name]] <- suppressWarnings(as.numeric(gsub(",", ".", raw[[col_name]])))
-
+ 
   raw$periodo <- tryCatch({
     as.Date(raw$periodo)
   }, error = function(e) {
     stop("ERROR convirtiendo fechas")
   })
-
+ 
   if (all(is.na(raw$periodo))) {
     stop("ERROR: todas las fechas son NA")
   }
-
+ 
   cat("[LOAD] Filas:", nrow(raw), "\n")
-
+ 
   raw %>%
     filter(!is.na(periodo), !is.na(.data[[col_name]])) %>%
     arrange(nivel_general_aperturas, periodo) %>%
@@ -106,48 +106,48 @@ if (!"nivel_general_aperturas" %in% colnames(raw)) {
     ) %>%
     ungroup()
 }
-
-
+ 
+ 
 cat("[STARTUP] Loading CSVs...\n")
-
+ 
 ipim_raw <- ipib_raw <- ipp_raw <- NULL
-
+ 
 data_ok <- TRUE
-
+ 
 tryCatch({
-
+ 
   ipim_raw <- load_index("data/indice_ipim.csv", "indice_ipim")
   ipib_raw <- load_index("data/indice_ipib.csv", "indice_ipib")
   ipp_raw  <- load_index("data/indice_ipp.csv",  "indice_ipp")
-
+ 
   cat("[OK] Datos cargados\n")
-
+ 
 }, error = function(e) {
-
+ 
   cat("\n========= ERROR EN DATOS =========\n")
   cat(e$message, "\n")
   cat("=================================\n")
-
+ 
   data_ok <<- FALSE
 })
-
-
+ 
+ 
 # Validacion final
 if (is.null(ipim_raw)) {
   cat("WARNING: ipim_raw es NULL\n")
 }
-
+ 
 ultimo_periodo <- tryCatch({
   max(ipim_raw$periodo, na.rm = TRUE)
 }, error = function(e) {
   Sys.Date()
 })
-
+ 
 cat("[STARTUP] Periodo detectado:", as.character(ultimo_periodo), "\n")
-
+ 
 ultimo_label   <- paste0(traducir_mes(format(ultimo_periodo, "%B")),
                          " de ", format(ultimo_periodo, "%Y"))
-
+ 
 # ── Constantes ───────────────────────────────────────────────────────────────
 TOP_IPIM <- c("ng_nivel_general", "1_primarios",
               "2_industria_manufacturera_ y_energia_electrica",
@@ -157,30 +157,30 @@ TOP_IPIB <- c("ng_nivel_general", "1_primarios",
               "i_productos_importados")
 TOP_IPP  <- c("ng_nivel_general", "1_primarios",
               "2_industria_manufacturera_ y_energia_electrica")
-
+ 
 LABEL_MAP <- c(
   "ng_nivel_general"                               = "Nivel General",
   "1_primarios"                                    = "Primarios",
   "2_industria_manufacturera_ y_energia_electrica" = "Ind. Manuf. y Energia",
   "i_productos_importados"                         = "Importados"
 )
-
+ 
 COLORES_COMP <- c(
   "Nivel General"         = "#37474f",
   "Primarios"             = "#1565c0",
   "Ind. Manuf. y Energia" = "#c62828",
   "Importados"            = "#2e7d32"
 )
-
+ 
 COLORES_IDX <- c("IPIM" = "#1565c0", "IPIB" = "#c62828", "IPP" = "#2e7d32")
-
+ 
 last_val <- function(df, code, var = "v_m") {
   df %>%
     filter(nivel_general_aperturas == code, !is.na(.data[[var]])) %>%
     arrange(periodo) %>% tail(1) %>% pull(var)
 }
 if (!data_ok) {
-
+ 
   ui <- fluidPage(
     tags$head(tags$style(HTML("body{background:#f5f5f5;font-family:sans-serif;}"))),
     div(style = "max-width:600px;margin:80px auto;padding:40px;background:white;border-radius:8px;border-left:5px solid #c62828;",
@@ -190,9 +190,9 @@ if (!data_ok) {
     )
   )
   server <- function(input, output, session) {}
-
+ 
 } else {
-
+ 
 # ── UI ────────────────────────────────────────────────────────────────────────
 ui <- dashboardPage(
   header    = dashboardHeader(
@@ -218,7 +218,7 @@ ui <- dashboardPage(
       .card-title { font-weight:600; }
     "))),
     tabItems(
-
+ 
       # ── Tab 1 - Principal ────────────────────────────────────────────────
       tabItem(tabName = "principal",
         h3("Sistema de Indices de Precios Mayoristas (SIPM)"),
@@ -265,7 +265,7 @@ ui <- dashboardPage(
           )
         )
       ),
-
+ 
       # ── Tab 2 - IPIM ────────────────────────────────────────────────────
       tabItem(tabName = "ipim",
         h3("IPIM - Indice de Precios Internos al por Mayor"),
@@ -303,7 +303,7 @@ ui <- dashboardPage(
           )
         )
       ),
-
+ 
       # ── Tab 3 - IPIB ────────────────────────────────────────────────────
       tabItem(tabName = "ipib",
         h3("IPIB - Indice de Precios Internos Basicos al por Mayor"),
@@ -341,7 +341,7 @@ ui <- dashboardPage(
           )
         )
       ),
-
+ 
       # ── Tab 4 - IPP ─────────────────────────────────────────────────────
       tabItem(tabName = "ipp",
         h3("IPP - Indice de Precios Basicos del Productor"),
@@ -379,7 +379,7 @@ ui <- dashboardPage(
           )
         )
       ),
-
+ 
       # ── Acerca de ────────────────────────────────────────────────────────
       tabItem(tabName = "about",
         h2("Acerca de EconSur - SIPM"),
@@ -413,10 +413,10 @@ ui <- dashboardPage(
     )
   )
 )
-
+ 
 # ── Server ────────────────────────────────────────────────────────────────────
 server <- function(input, output, session) {
-
+ 
   # ── Funciones reutilizables ────────────────────────────────────────────────
   hc_sipm_theme <- function(hc) {
     hc %>%
@@ -428,7 +428,7 @@ server <- function(input, output, session) {
       hc_tooltip(crosshairs = TRUE, backgroundColor = "#F0F0F0",
                  shared = TRUE, borderWidth = 2)
   }
-
+ 
   metrica_col <- function(metrica) {
     switch(metrica,
       "Nivel (base 100)"       = "indice",
@@ -436,7 +436,7 @@ server <- function(input, output, session) {
       "Variacion Interanual %" = "v_ia"
     )
   }
-
+ 
   metrica_ytitle <- function(metrica) {
     switch(metrica,
       "Nivel (base 100)"       = "Indice (dic-2015=100)",
@@ -444,28 +444,28 @@ server <- function(input, output, session) {
       "Variacion Interanual %" = "% Interanual"
     )
   }
-
+ 
   filtrar_rng <- function(df, rng) {
     max_p <- max(df$periodo, na.rm = TRUE)
     if (rng == "Ultimos 36 meses") df <- df %>% filter(periodo >= max_p %m-% months(36))
     if (rng == "Ultimos 12 meses") df <- df %>% filter(periodo >= max_p %m-% months(12))
     df
   }
-
+ 
   # Gráfico de líneas multicomponente
   build_lineas <- function(df, codes, metrica, rng, titulo) {
     col_val <- metrica_col(metrica)
     ytitle  <- metrica_ytitle(metrica)
-
+ 
     df_top <- df %>%
       filter(nivel_general_aperturas %in% codes, !is.na(.data[[col_val]])) %>%
       mutate(label = LABEL_MAP[nivel_general_aperturas],
              val   = .data[[col_val]]) %>%
       filtrar_rng(rng)
-
+ 
     orden  <- c("Nivel General", "Primarios", "Ind. Manuf. y Energia", "Importados")
     labels <- intersect(orden, unique(df_top$label))
-
+ 
     hc <- highchart() %>%
       hc_chart(type = "line") %>%
       hc_xAxis(type = "datetime",
@@ -486,7 +486,7 @@ server <- function(input, output, session) {
                    "<span style='color:{series.color}'>&#9679;</span> ",
                    "{series.name}: <b>{point.y:.2f}</b><br/>")) %>%
       hc_sipm_theme()
-
+ 
     for (lbl in labels) {
       sdata <- df_top %>% filter(label == lbl) %>% arrange(periodo)
       col_s <- COLORES_COMP[lbl]; if (is.na(col_s)) col_s <- "#607d8b"
@@ -503,7 +503,7 @@ server <- function(input, output, session) {
     }
     hc
   }
-
+ 
   # Gráfico de barras horizontales ultimo mes
   build_barras <- function(df, codes, varname, ytitle, titulo) {
     bd <- df %>%
@@ -517,7 +517,7 @@ server <- function(input, output, session) {
       ) %>%
       arrange(val) %>%
       mutate(label = factor(label, levels = label))
-
+ 
     hchart(bd, "bar", hcaes(x = label, y = val, color = color),
            showInLegend = FALSE,
            dataLabels = list(
@@ -542,7 +542,7 @@ server <- function(input, output, session) {
       hc_plotOptions(bar = list(borderRadius = 3,
                                 groupPadding = 0.05, pointPadding = 0.05))
   }
-
+ 
   # ── KPIs ──────────────────────────────────────────────────────────────────
   output$vb_ipim <- renderbs4ValueBox({
     vm  <- round(last_val(ipim_raw, "ng_nivel_general", "v_m"),  1)
@@ -554,7 +554,7 @@ server <- function(input, output, session) {
       footer   = div(ultimo_label)
     )
   })
-
+ 
   output$vb_ipib <- renderbs4ValueBox({
     vm  <- round(last_val(ipib_raw, "ng_nivel_general", "v_m"),  1)
     via <- round(last_val(ipib_raw, "ng_nivel_general", "v_ia"), 1)
@@ -565,7 +565,7 @@ server <- function(input, output, session) {
       footer   = div(ultimo_label)
     )
   })
-
+ 
   output$vb_ipp <- renderbs4ValueBox({
     vm  <- round(last_val(ipp_raw, "ng_nivel_general", "v_m"),  1)
     via <- round(last_val(ipp_raw, "ng_nivel_general", "v_ia"), 1)
@@ -576,14 +576,14 @@ server <- function(input, output, session) {
       footer   = div(ultimo_label)
     )
   })
-
+ 
   # ── Principal - líneas ────────────────────────────────────────────────────
   output$plot_principal_lineas <- renderHighchart({
     metrica <- input$metrica_principal
     rng     <- input$rng_principal
     col_val <- metrica_col(metrica)
     ytitle  <- metrica_ytitle(metrica)
-
+ 
     make_ng <- function(df, nombre, color) {
       s <- df %>%
         filter(nivel_general_aperturas == "ng_nivel_general",
@@ -592,13 +592,13 @@ server <- function(input, output, session) {
         filtrar_rng(rng)
       list(df = s, nombre = nombre, color = color)
     }
-
+ 
     series_list <- list(
       make_ng(ipim_raw, "IPIM", unname(COLORES_IDX["IPIM"])),
       make_ng(ipib_raw, "IPIB", unname(COLORES_IDX["IPIB"])),
       make_ng(ipp_raw,  "IPP",  unname(COLORES_IDX["IPP"]))
     )
-
+ 
     hc <- highchart() %>%
       hc_chart(type = "line") %>%
       hc_xAxis(type = "datetime",
@@ -619,7 +619,7 @@ server <- function(input, output, session) {
                    "<span style='color:{series.color}'>&#9679;</span> ",
                    "{series.name}: <b>{point.y:.2f}</b><br/>")) %>%
       hc_sipm_theme()
-
+ 
     for (sl in series_list) {
       hc <- hc %>% hc_add_series(
         data      = sl$df,
@@ -633,7 +633,7 @@ server <- function(input, output, session) {
     }
     hc
   })
-
+ 
   # Principal barras
   output$plot_principal_barras_m <- renderHighchart({
     bd <- tibble(
@@ -644,7 +644,7 @@ server <- function(input, output, session) {
       color = unname(COLORES_IDX[c("IPIM", "IPIB", "IPP")])
     ) %>%
       mutate(val = round(val, 2), label = factor(label, levels = label))
-
+ 
     hchart(bd, "column", hcaes(x = label, y = val, color = color),
            showInLegend = FALSE,
            dataLabels = list(enabled = TRUE, format = "{point.y:.1f} %",
@@ -662,7 +662,7 @@ server <- function(input, output, session) {
       hc_tooltip(pointFormat = "<b>{point.y:.2f} %</b>") %>%
       hc_sipm_theme() %>% hc_legend(enabled = FALSE)
   })
-
+ 
   output$plot_principal_barras_ia <- renderHighchart({
     bd <- tibble(
       label = c("IPIM", "IPIB", "IPP"),
@@ -672,7 +672,7 @@ server <- function(input, output, session) {
       color = unname(COLORES_IDX[c("IPIM", "IPIB", "IPP")])
     ) %>%
       mutate(val = round(val, 2), label = factor(label, levels = label))
-
+ 
     hchart(bd, "column", hcaes(x = label, y = val, color = color),
            showInLegend = FALSE,
            dataLabels = list(enabled = TRUE, format = "{point.y:.1f} %",
@@ -690,7 +690,7 @@ server <- function(input, output, session) {
       hc_tooltip(pointFormat = "<b>{point.y:.2f} %</b>") %>%
       hc_sipm_theme() %>% hc_legend(enabled = FALSE)
   })
-
+ 
   # ── IPIM ──────────────────────────────────────────────────────────────────
   output$plot_ipim_lineas    <- renderHighchart({
     build_lineas(ipim_raw, TOP_IPIM, input$metrica_ipim, input$rng_ipim, "IPIM")
@@ -701,7 +701,7 @@ server <- function(input, output, session) {
   output$plot_ipim_barras_ia <- renderHighchart({
     build_barras(ipim_raw, TOP_IPIM, "v_ia", "% Interanual", "Variacion Interanual")
   })
-
+ 
   # ── IPIB ──────────────────────────────────────────────────────────────────
   output$plot_ipib_lineas    <- renderHighchart({
     build_lineas(ipib_raw, TOP_IPIB, input$metrica_ipib, input$rng_ipib, "IPIB")
@@ -712,7 +712,7 @@ server <- function(input, output, session) {
   output$plot_ipib_barras_ia <- renderHighchart({
     build_barras(ipib_raw, TOP_IPIB, "v_ia", "% Interanual", "Variacion Interanual")
   })
-
+ 
   # ── IPP ───────────────────────────────────────────────────────────────────
   output$plot_ipp_lineas    <- renderHighchart({
     build_lineas(ipp_raw, TOP_IPP, input$metrica_ipp, input$rng_ipp, "IPP")
@@ -724,8 +724,8 @@ server <- function(input, output, session) {
     build_barras(ipp_raw, TOP_IPP, "v_ia", "% Interanual", "Variacion Interanual")
   })
 }
-
+ 
 shinyApp(ui = ui, server = server)
-
+ 
 } # end if/else data_ok
-
+        
