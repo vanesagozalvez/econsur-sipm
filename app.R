@@ -19,6 +19,7 @@ safe_library("shiny")
 safe_library("bs4Dash")
 safe_library("dplyr")
 safe_library("tidyr")
+safe_library("tibble")
 safe_library("highcharter")
 safe_library("viridis")
 safe_library("lubridate")
@@ -181,23 +182,19 @@ last_val <- function(df, code, var = "v_m") {
 if (!data_ok) {
 
   ui <- fluidPage(
-    h2("Error en carga de datos"),
-    p("Revisar logs en Render")
+    tags$head(tags$style(HTML("body{background:#f5f5f5;font-family:sans-serif;}"))),
+    div(style = "max-width:600px;margin:80px auto;padding:40px;background:white;border-radius:8px;border-left:5px solid #c62828;",
+      h2("⚠ Error al cargar los datos", style = "color:#c62828;"),
+      p("La aplicación no pudo inicializar. Revisar los logs en Render Dashboard."),
+      p(em("Verificar que la carpeta data/ contiene los 3 archivos CSV."))
+    )
   )
-
   server <- function(input, output, session) {}
 
-  shinyApp(ui, server)
-
-  # NOTA: return() en contexto global causa error fatal en R —
-  # shinyApp() ya detiene la ejecución al lanzar la app de error.
-}
-
-if (data_ok) {
+} else {
 
 # ── UI ────────────────────────────────────────────────────────────────────────
 ui <- dashboardPage(
-  preloader = list(html = tagList(waiter::spin_6(), " Cargando..."), color = "#1a237e"),
   header    = dashboardHeader(
     skin  = "dark", fixed = TRUE,
     title = dashboardBrand(
@@ -730,5 +727,5 @@ server <- function(input, output, session) {
 
 shinyApp(ui = ui, server = server)
 
-} # end if (data_ok)
+} # end if/else data_ok
 

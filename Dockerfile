@@ -19,6 +19,7 @@ RUN R -e "options(repos=c(RSPM=Sys.getenv('RSPM'))); \
       'bs4Dash', \
       'dplyr', \
       'tidyr', \
+      'tibble', \
       'highcharter', \
       'viridis', \
       'lubridate', \
